@@ -1,6 +1,5 @@
-
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
     display: flex;
@@ -10,7 +9,7 @@ body {
 }
 
 header {
-    background-color: #333;
+    background-color: #4CAF50;
     color: white;
     padding: 10px 0;
     width: 100%;
@@ -20,7 +19,6 @@ header {
 main {
     margin: 20px;
     text-align: center;
-    width: 80%;
 }
 
 #data-display {
@@ -32,7 +30,6 @@ main {
 
 footer {
     margin-top: 20px;
-    color: #555;
 }
 
 /* Responsive design */
@@ -40,4 +37,15 @@ footer {
     main {
         width: 95%;
     }
+}
+
+/* Additional styling for dropdown and placeholder content */
+select {
+    margin: 10px;
+    padding: 5px;
+}
+
+#data-display p {
+    color: #333;
+    font-size: 1.2em;
 }
