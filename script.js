@@ -1,18 +1,34 @@
-
 document.getElementById('current-location').addEventListener('click', function() {
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-            fetchData(lat, lng);
-        }, showError);
+        navigator.geolocation.getCurrentPosition(fetchPositionData, showError);
     } else {
-        alert('Geolocation is not supported by this browser.');
+        displayError('Geolocation is not supported by this browser.');
     }
 });
 
 document.getElementById('search-location').addEventListener('click', function() {
     const location = document.getElementById('location-search').value;
+    if (location) {
+        fetchLocationData(location);
+    } else {
+        displayError('Please enter a location.');
+    }
+});
+
+document.getElementById('predefined-locations').addEventListener('change', function() {
+    const location = this.value;
+    if (location) {
+        fetchLocationData(location);
+    }
+});
+
+function fetchPositionData(position) {
+    const lat = position.coords.latitude;
+    const lng = position.coords.longitude;
+    fetchData(lat, lng);
+}
+
+function fetchLocationData(location) {
     fetch(`https://geocode.maps.co/search?q=${location}`).then(response => response.json())
     .then(data => {
         if (data.length > 0) {
@@ -20,10 +36,10 @@ document.getElementById('search-location').addEventListener('click', function() 
             const lon = data[0].lon;
             fetchData(lat, lon);
         } else {
-            showError("Location not found");
+            displayError('Location not found');
         }
-    }).catch(showError);
-});
+    }).catch(() => displayError('Error fetching location data'));
+}
 
 function fetchData(lat, lng) {
     fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`)
@@ -32,18 +48,12 @@ function fetchData(lat, lng) {
         if (data.status === 'OK') {
             updateUI(data.results);
         } else {
-            showError("Error fetching sunrise and sunset data");
+            displayError('Error fetching sunrise and sunset data');
         }
-    }).catch(showError);
+    }).catch(() => displayError('Error fetching data'));
 }
 
 function updateUI(data) {
     const display = document.getElementById('data-display');
-    display.innerHTML = `<p>Sunrise: ${new Date(data.sunrise).toLocaleTimeString()}</p>
-                         <p>Sunset: ${new Date(data.sunset).toLocaleTimeString()}</p>`;
-    // Add more data processing and UI updates here
-}
-
-function showError(error) {
-    alert(typeof error === 'string' ? error : "An error occurred");
-}
+    // Update this section to display all required information
+   
