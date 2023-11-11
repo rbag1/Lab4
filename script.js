@@ -42,18 +42,80 @@ function fetchLocationData(location) {
 }
 
 function fetchData(lat, lng) {
-    fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`)
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'OK') {
-            updateUI(data.results);
-        } else {
-            displayError('Error fetching sunrise and sunset data');
-        }
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    Promise.all([
+        fetchSunriseSunsetData(lat, lng, today),
+        fetchSunriseSunsetData(lat, lng, tomorrow)
+    ]).then(([todayData, tomorrowData]) => {
+        updateUI(todayData, tomorrowData);
     }).catch(() => displayError('Error fetching data'));
 }
 
-function updateUI(data) {
+
+   function updateUI(data) {
     const display = document.getElementById('data-display');
-    // Update this section to display all required information
-   
+    display.innerHTML = `
+        <p><strong>Sunrise:</strong> ${formatTime(data.sunrise)}</p>
+        <p><strong>Sunset:</strong> ${formatTime(data.sunset)}</p>
+        <p><strong>Civil Dawn:</strong> ${formatTime(data.civil_twilight_begin)}</p>
+        <p><strong>Civil Dusk:</strong> ${formatTime(data.civil_twilight_end)}</p>
+        <p><strong>Day Length:</strong> ${formatDayLength(data.day_length)}</p>
+        <p><strong>Solar Noon:</strong> ${formatTime(data.solar_noon)}</p>
+    `;
+}
+
+function formatTime(timeString) {
+    const time = new Date(timeString);
+    return time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function formatDayLength(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    return `${hours}h ${minutes}m`;
+}
+
+function displayError(message) {
+    const display = document.getElementById('data-display');
+    display.innerHTML = `<p class="error">${message}</p>`;
+}
+
+function fetchSunriseSunsetData(lat, lng, date) {
+    const formattedDate = date.toISOString().split('T')[0];
+    const url = `https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&date=${formattedDate}&formatted=0`;
+    return fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'OK') {
+                return data.results;
+            } else {
+                throw new Error('API Error');
+            }
+        });
+}
+
+function updateUI(todayData, tomorrowData) {
+    const display = document.getElementById('data-display');
+    display.innerHTML = `
+        <h3>Today</h3>
+        ${formatData(todayData)}
+        <h3>Tomorrow</h3>
+        ${formatData(tomorrowData)}
+    `;
+}
+
+function formatData(data) {
+    return `
+        <p><strong>Sunrise:</strong> ${formatTime(data.sunrise)}</p>
+        <p><strong>Sunset:</strong> ${formatTime(data.sunset)}</p>
+        <p><strong>Civil Dawn:</strong> ${formatTime(data.civil_twilight_begin)}</p>
+        <p><strong>Civil Dusk:</strong> ${formatTime(data.civil_twilight_end)}</p>
+        <p><strong>Day Length:</strong> ${formatDayLength(data.day_length)}</p>
+        <p><strong>Solar Noon:</strong> ${formatTime(data.solar_noon)}</p>
+    `;
+}
+
+
